@@ -20,6 +20,7 @@ const History = (props) => {
         </div>
     )
 }
+const StatisticsLine = ({text, value}) => <p>{text}: {value}</p>
 
 const Statistics = ({good = 0, bad = 0, neutral = 0}) => {
     const total = good + bad + neutral;
@@ -30,6 +31,9 @@ const Statistics = ({good = 0, bad = 0, neutral = 0}) => {
 
         <div>
             <h3>Statistics</h3>
+            <StatisticsLine text="Good" value={good} />
+            <StatisticsLine text="Neutral" value={neutral} />
+            <StatisticsLine text="Bad" value={bad} />
             <p>Average: {average}</p>
             <p>Positive: {positive}</p>
         </div>
