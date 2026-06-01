@@ -12,4 +12,4 @@ sequenceDiagram
     server-->>browser: 201 Created (JSON: {"message":"note created"})
     deactivate server
 
-    Note right of browser: The browser stays on the same page;<br/>no further HTTP requests are needed.
+    Note right of browser: The browser stays on the same page;<br/>no further HTTP reques                                                                                      ts are needed.
