@@ -21,6 +21,19 @@ const History = (props) => {
     )
 }
 
+const Statistics = ({good = 0, bad = 0, neutral = 0}) => {
+    const total = good + bad + neutral;
+    const average = total > 0 ? (good + bad)/total : 0;
+    const positive = total > 0 ? good/total : 0;
+    return (
+        <div>
+            <h3>Statistics</h3>
+            <p>Average: {average}</p>
+            <p>Positive: {positive}</p>
+        </div>
+    )
+}
+
 
 const App = () => {
   const [good, setGood] = useState(0);
@@ -44,7 +57,7 @@ const App = () => {
   const total = good + neutral + bad;
   const average = total === 0 ? 0 : (good - bad) / total;
   const positive = total === 0 ? 0 : (good / total) * 100;
-
+  const statProps = {good, neutral, bad};
   return (
    <div>
 
@@ -54,13 +67,7 @@ const App = () => {
 
 
      <History allClicks={allClick} />
-       <h3>Statistics</h3>
-       <p>good: {good} </p>
-       <p>neutral: {neutral} </p>
-       <p>bad: {bad} </p>
-       <p>all: {total}</p>
-       <p>average: {average}</p>
-       <p>positive: {positive} %</p>
+     <Statistics {...statProps} />
    </div>
   )
 }
