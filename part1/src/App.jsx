@@ -20,7 +20,8 @@ const History = (props) => {
         </div>
     )
 }
-const StatisticsLine = ({text, value}) => <p>{text}: {value}</p>
+const StatisticsLine = ({text, value}) => <tr>
+    <td>{text}</td> <td>{value.toFixed(2)}</td></tr>
 
 const Statistics = ({good = 0, bad = 0, neutral = 0}) => {
     const total = good + bad + neutral;
@@ -29,13 +30,19 @@ const Statistics = ({good = 0, bad = 0, neutral = 0}) => {
      if(total === 0) return <div>No feedback given</div>
     return (
 
-        <div>
+        <div id="statistics">
             <h3>Statistics</h3>
+            <table id="statistics-table">
+                <tbody>
             <StatisticsLine text="Good" value={good} />
             <StatisticsLine text="Neutral" value={neutral} />
             <StatisticsLine text="Bad" value={bad} />
-            <p>Average: {average}</p>
-            <p>Positive: {positive}</p>
+            <StatisticsLine text="All" value={total} />
+            <StatisticsLine text="Average" value={average}/>
+            <StatisticsLine text= "Positive" value={positive}/>
+                </tbody>
+            </table>
+
         </div>
     )
 }
