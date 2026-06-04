@@ -1,87 +1,48 @@
 import { useState } from 'react'
-import './App.css'
 
-const Display = ({counter}) =>  <div>{counter}</div>
+const Button = ({onClick, selected, text}) => <button onClick={onClick}>{text}</button>;
 
-
-const Button = ({onClick, text}) => <button onClick={onClick}> {text}</button>
-
-const History = (props) => {
-    if(props.allClicks.length === 0){
-        return(
-            <div>
-                the app is used by pressing the buttons
-            </div>
-        )
-    }
-    return (
-        <div>
-            button press history: {props.allClicks.join(' ')}
-        </div>
-    )
-}
-const StatisticsLine = ({text, value}) => <tr>
-    <td>{text}</td> <td>{value.toFixed(2)}</td></tr>
-
-const Statistics = ({good = 0, bad = 0, neutral = 0}) => {
-    const total = good + bad + neutral;
-    const average = total > 0 ? (good + bad)/total : 0;
-    const positive = total > 0 ? good/total : 0;
-     if(total === 0) return <div>No feedback given</div>
-    return (
-
-        <div id="statistics">
-            <h3>Statistics</h3>
-            <table id="statistics-table">
-                <tbody>
-            <StatisticsLine text="Good" value={good} />
-            <StatisticsLine text="Neutral" value={neutral} />
-            <StatisticsLine text="Bad" value={bad} />
-            <StatisticsLine text="All" value={total} />
-            <StatisticsLine text="Average" value={average}/>
-            <StatisticsLine text= "Positive" value={positive}/>
-                </tbody>
-            </table>
-
-        </div>
-    )
-}
-
+const MostVoted = (votes) => votes.indexOf(Math.max(...votes));
 
 const App = () => {
-  const [good, setGood] = useState(0);
-  const [neutral, setNeutral] = useState(0);
-  const [bad, setBad] = useState(0);
-  const [allClick, setAll] = useState([]);
 
-  const handleGoodClick = () => {
-    setAll(allClick.concat('Good'));
-    setGood(good + 1);
-  }
-  const handleNeutralClick = () => {
-      setAll(allClick.concat('Neutral'));
-      setNeutral(neutral + 1);
-  }
-  const handleBadClick = () => {
-      setAll(allClick.concat('Bad'));
-      setBad(bad + 1);
+  const anecdotes = [
+    'If it hurts, do it more often.',
+    'Adding manpower to a late software project makes it later!',
+    'The first 90 percent of the code accounts for the first 90 percent of the development time...The remaining 10 percent of the code accounts for the other 90 percent of the development time.',
+    'Any fool can write code that a computer can understand. Good programmers write code that humans can understand.',
+    'Premature optimization is the root of all evil.',
+    'Debugging is twice as hard as writing the code in the first place. Therefore, if you write the code as cleverly as possible, you are, by definition, not smart enough to debug it.',
+    'Programming without an extremely heavy use of console.log is same as if a doctor would refuse to use x-rays or blood tests when diagnosing patients.',
+    'The only way to go fast, is to go well.'
+  ]
+
+  // Initialize an array of zeros that is the same length as the anecdotes array
+  const [votes, setVotes] = useState(new Array(anecdotes.length).fill(0))
+  const [selected, setSelected] = useState(0)
+
+  const handleRandomClick = () => {
+    setSelected(Math.floor(Math.random() * anecdotes.length))
   }
 
-  const total = good + neutral + bad;
-  const average = total === 0 ? 0 : (good - bad) / total;
-  const positive = total === 0 ? 0 : (good / total) * 100;
-  const statProps = {good, neutral, bad};
+  const handleVoteClick = () => {
+    const copy = [...votes]       // Create a copy of the array
+    copy[selected] += 1           // Increment the vote for the currently selected anecdote
+    setVotes(copy)                // Set the state to the updated array
+  }
+
   return (
-   <div>
+    <div >
+      <p>{anecdotes[selected]}</p>
+      <p> has {votes[selected]} votes</p>
+      <Button onClick={handleVoteClick} text={'Vote'}/> <Button onClick={handleRandomClick} text="Next Anecdote"/>
 
-       <Button onClick={handleGoodClick} text="Good" />
-       <Button onClick={handleNeutralClick} text="Neutral" />
-       <Button onClick={handleBadClick} text="Bad" />
+   <br/>
+    <hr />
+        <h3>Anecdote with the most votes</h3>
+        <p>{anecdotes[MostVoted(votes)]} with {votes[MostVoted(votes)]} votes</p>
 
-
-     <History allClicks={allClick} />
-     <Statistics {...statProps} />
-   </div>
+    </div>
   )
 }
 
