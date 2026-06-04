@@ -2,11 +2,13 @@ import { useState } from 'react'
 import './App.css'
 const Course = (course) => {
   const {parts} = course.course;
+  const totalExercises = parts.reduce((sum, {exercises}) => sum + exercises,0)
   return (
     <div className="courses">
       <h2>{course.course.name}</h2>
       <div id="topic-list">
         {parts.map( part => <p key={part.id}>{part.name} {part.exercises}</p> )}
+        <p>Total of {totalExercises} exercises</p>
       </div>
 
     </div>
