@@ -210,6 +210,7 @@ td{
   gap: 8px;
   justify-content: flex-start;
   align-items: flex-start;
+
 }
 #topic-list{
   display: flex;
@@ -217,4 +218,11 @@ td{
   align-items: flex-start;
   justify-content: flex-start;
   gap: 8px;
+}
+h1, .course h2{
+  text-align: left;
+  margin: 1rem 0;
+}
+#root{
+  margin-left: 1rem;
 }
