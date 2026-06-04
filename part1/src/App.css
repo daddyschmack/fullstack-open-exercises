@@ -203,3 +203,18 @@ td{
   max-width: 2rem;
   text-align: left;
 }
+.courses{
+  margin-left: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+#topic-list{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 8px;
+}
