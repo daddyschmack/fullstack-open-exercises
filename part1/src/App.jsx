@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react'
 import PersonsForm from './components/PersonsForm'
-import axios from "axios";
+import contactService from './services/contactService'
 import './App.css'
 
 const Filter = ({filter, setFilter})=> {
@@ -13,21 +13,35 @@ const Filter = ({filter, setFilter})=> {
 
 }
 
+const ConfirmButton = ({method, person, action}) => {
+    const handleClick = (event) => {
+        event.preventDefault()
+        if(window.confirm(`Are you sure you want to ${action.toLowerCase()} ${person.name}?`)){
+            method(person.id)
+        }
+    };
+    return (
+        <button onClick={handleClick}>{action}</button>
+    )
+}
+
 const Persons = (props) => {
     const personsToShow = props.persons.filter( person => person.name.toLowerCase().includes(props.filter.toLowerCase()))
     return (
         <ul className="personList">
-            {personsToShow.map(person => <li key={person.id}>{person.name} {person.number}</li>)}
+            {personsToShow.map(person =>
+                <li key={person.id}>{person.name} {person.number}
+                <ConfirmButton action={"Delete"} method={() => props.deletePerson(person.id)} person={person}/>
+                </li>)}
         </ul>
     )
 }
 const App = () => {
-    let [persons, setPersons] = useState([]);
+    const [persons, setPersons] = useState([]);
     const hook = () => {
-        axios.get('http://localhost:3001/persons')
-            .then((response) => {
-                setPersons(response.data)
-            })
+        contactService.getAll()
+            .then(initialPeople => setPersons(initialPeople))
+            .catch(err => console.error('Error fetching and parsing data', err))
     }
 
   const [newName, setNewName] = useState('')
@@ -37,16 +51,44 @@ const App = () => {
   useEffect(hook, [])
   const addPerson = (event) =>{
       event.preventDefault()
-        let isDuplicate = persons.some( person => person.name === newName)
-  if(isDuplicate){
-          return alert(`${newName} is already added to phonebook`)
+      let isDuplicate = persons.some( person => person.name === newName)
+      if(isDuplicate){
+          const dupId = persons.find(person => person.name === newName).id
+          if (window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)) {
+              updatePerson(dupId, {name: newName, number: newNumber})
+          }
+          // Clear the form and exit the function early so we don't try to create!
+          setNewName('');
+          setNewNumber('');
+          return;
       }
+      
       // We already have the current input value in the newName state!
-      setPersons( persons.concat({name: newName, number: newNumber}))
+      const newContact = {name: newName, number: newNumber}
+      contactService.createContact(newContact)
+          .then(returnedPerson => {
+              setPersons(persons.concat(returnedPerson))
+          })
+          .catch(err => console.error('Error creating new contact', err))
 
       setNewName('');
       setNewNumber('');
   }
+  const deletePerson = (id) => {
+        contactService.deleteContact(id)
+            .then(returnedPerson => {
+                setPersons(persons.filter(person => person.id !== id))
+            })
+            .catch(err => console.error('Error deleting contact', err))
+  }
+  const updatePerson = (id, updatedPerson) => {
+        contactService.updateContact(id, updatedPerson)
+            .then(returnedPerson => {
+                setPersons(persons.map(person => person.id !== id ? person : returnedPerson))
+            })
+            .catch(err => console.error('Error updating contact', err))
+  }
+
 
 
 
@@ -60,9 +102,12 @@ const App = () => {
           setNewName={setNewName}
           newNumber={newNumber}
           setNewNumber={setNewNumber}
+          deletePerson={deletePerson}
+          updatePerson={updatePerson}
       />
       <h2>Numbers</h2>
-        <Persons persons={persons} filter={filter}/>
+        <Persons persons={persons} filter={filter} deletePerson={deletePerson}
+        updatePerson={updatePerson}/>
     </div>
   )
 }
