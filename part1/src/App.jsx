@@ -2,6 +2,7 @@ import {useEffect, useState} from 'react'
 import PersonsForm from './components/PersonsForm'
 import contactService from './services/contactService'
 import './App.css'
+import Notification from "./components/Notifications.jsx";
 
 const Filter = ({filter, setFilter})=> {
     const handleSearch = (event) => {
@@ -38,6 +39,10 @@ const Persons = (props) => {
 }
 const App = () => {
     const [persons, setPersons] = useState([]);
+    const [notificationMessage, setNotificationMessage] = useState(null);
+     // State for the notification's style
+  const [notificationStyle, setNotificationStyle] = useState(''); // e.g., 'success' or 'error'
+
     const hook = () => {
         contactService.getAll()
             .then(initialPeople => setPersons(initialPeople))
@@ -47,6 +52,28 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
+
+ const handleSuccess = () => {
+    // Set the style to 'success' and provide a message
+    setNotificationStyle('success');
+    setNotificationMessage('Operation was successful!');
+
+    // Make it disappear after a few seconds
+    setTimeout(() => {
+      setNotificationMessage(null);
+    }, 3000);
+  }
+
+  const handleError = (err) => {
+    // Set the style to 'error' and provide a message
+    setNotificationStyle('error');
+    setNotificationMessage(err.message || 'An error occurred.');
+
+    // Make it disappear after a few seconds
+    setTimeout(() => {
+      setNotificationMessage(null);
+    }, 3000);
+  }
 
   useEffect(hook, [])
   const addPerson = (event) =>{
@@ -68,8 +95,12 @@ const App = () => {
       contactService.createContact(newContact)
           .then(returnedPerson => {
               setPersons(persons.concat(returnedPerson))
+              handleSuccess();
           })
-          .catch(err => console.error('Error creating new contact', err))
+          .catch(err => {
+              console.error('Error creating new contact', err);
+              handleError(err);
+          })
 
       setNewName('');
       setNewNumber('');
@@ -94,6 +125,7 @@ const App = () => {
 
   return (
     <div>
+        <Notification message={notificationMessage} className={notificationStyle}/>
         <Filter filter={filter} setFilter={setFilter}/>
       <h2>Phonebook</h2>
       <PersonsForm
