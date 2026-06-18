@@ -53,10 +53,10 @@ const App = () => {
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
 
- const handleSuccess = () => {
+ const handleSuccess = (personName) => {
     // Set the style to 'success' and provide a message
     setNotificationStyle('success');
-    setNotificationMessage('Operation was successful!');
+    setNotificationMessage(`Added ${personName}`);
 
     // Make it disappear after a few seconds
     setTimeout(() => {
@@ -64,10 +64,19 @@ const App = () => {
     }, 3000);
   }
 
-  const handleError = (err) => {
+  const handleError = (reference, err) => {
+        if(reference.name) {
+
+        }
+       const errorCode = err.status ? err.status : ''
+      if(errorCode == 404) {
+          setNotificationMessage(`Information for ${reference.name} has been removed from the server`);
+      } else {
+           setNotificationMessage(err || 'An error occurred.');
+      }
     // Set the style to 'error' and provide a message
     setNotificationStyle('error');
-    setNotificationMessage(err.message || 'An error occurred.');
+
 
     // Make it disappear after a few seconds
     setTimeout(() => {
@@ -95,11 +104,11 @@ const App = () => {
       contactService.createContact(newContact)
           .then(returnedPerson => {
               setPersons(persons.concat(returnedPerson))
-              handleSuccess();
+              handleSuccess(newContact.name);
           })
           .catch(err => {
               console.error('Error creating new contact', err);
-              handleError(err);
+              handleError(newContact, err);
           })
 
       setNewName('');
@@ -110,14 +119,20 @@ const App = () => {
             .then(returnedPerson => {
                 setPersons(persons.filter(person => person.id !== id))
             })
-            .catch(err => console.error('Error deleting contact', err))
+            .catch(err => {
+                console.error('Error deleting contact', err);
+                handleError(id, err);
+            })
   }
   const updatePerson = (id, updatedPerson) => {
         contactService.updateContact(id, updatedPerson)
             .then(returnedPerson => {
                 setPersons(persons.map(person => person.id !== id ? person : returnedPerson))
             })
-            .catch(err => console.error('Error updating contact', err))
+            .catch(err => {
+                console.error('Error updating contact', err)
+                handleError(updatedPerson, err);
+            })
   }
 
 

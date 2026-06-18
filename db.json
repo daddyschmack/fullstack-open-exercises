@@ -24,6 +24,11 @@
       "name": "arlo hellas",
       "number": "548-9658",
       "id": "JbfncLRg4lY"
+    },
+    {
+      "name": "steve curain",
+      "number": "321-8787",
+      "id": "A-9ict7tkWg"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
