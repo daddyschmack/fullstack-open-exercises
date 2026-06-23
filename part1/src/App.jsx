@@ -1,44 +1,25 @@
-import {useEffect, useState} from 'react'
+import {useEffect, useMemo, useState} from 'react'
 import PersonsForm from './components/PersonsForm'
 import contactService from './services/contactService'
+import countryService from './services/countryService'
 import './App.css'
 import Notification from "./components/Notifications.jsx";
+import Countries from "./components/Countries.jsx";
 
 const Filter = ({filter, setFilter})=> {
     const handleSearch = (event) => {
         setFilter(event.target.value)
         }
         return(
-                    <p>Filter Names by: <input value={filter} onChange={handleSearch}/></p>
+                    <p>Filter Countries by: <input value={filter} onChange={handleSearch}/></p>
+
             )
 
 }
 
-const ConfirmButton = ({method, person, action}) => {
-    const handleClick = (event) => {
-        event.preventDefault()
-        if(window.confirm(`Are you sure you want to ${action.toLowerCase()} ${person.name}?`)){
-            method(person.id)
-        }
-    };
-    return (
-        <button onClick={handleClick}>{action}</button>
-    )
-}
 
-const Persons = (props) => {
-    const personsToShow = props.persons.filter( person => person.name.toLowerCase().includes(props.filter.toLowerCase()))
-    return (
-        <ul className="personList">
-            {personsToShow.map(person =>
-                <li key={person.id}>{person.name} {person.number}
-                <ConfirmButton action={"Delete"} method={() => props.deletePerson(person.id)} person={person}/>
-                </li>)}
-        </ul>
-    )
-}
 const App = () => {
-    const [persons, setPersons] = useState([]);
+    const [country, setCountry] = useState([]);
     const [notificationMessage, setNotificationMessage] = useState(null);
      // State for the notification's style
   const [notificationStyle, setNotificationStyle] = useState(''); // e.g., 'success' or 'error'
@@ -47,6 +28,27 @@ const App = () => {
         contactService.getAll()
             .then(initialPeople => setPersons(initialPeople))
             .catch(err => console.error('Error fetching and parsing data', err))
+    }
+    const countrySearchHook = async (searchTerm) =>{
+            try{
+                if(searchTerm && searchTerm.length > 3) {
+                    const data = await countryService.searchCountries(searchTerm)
+                    setCountry(data)
+                }
+            }catch(err){
+                console.error('Error fetching and parsing data', err)
+                setNotificationStyle(err)
+                setNotificationMessage(`Added ${searchTerm}`);
+            }
+
+    }
+    const countryHook = async () => {
+        try{
+            const data = await countryService.getAll();
+            setCountry(data)
+        }catch(err){
+            console.error('Error fetching and parsing data', err)
+        }
     }
 
   const [newName, setNewName] = useState('')
@@ -76,7 +78,7 @@ const App = () => {
       }
     // Set the style to 'error' and provide a message
     setNotificationStyle('error');
-
+    setNotificationMessage(err || 'An error occurred.');
 
     // Make it disappear after a few seconds
     setTimeout(() => {
@@ -84,77 +86,20 @@ const App = () => {
     }, 3000);
   }
 
-  useEffect(hook, [])
-  const addPerson = (event) =>{
-      event.preventDefault()
-      let isDuplicate = persons.some( person => person.name === newName)
-      if(isDuplicate){
-          const dupId = persons.find(person => person.name === newName).id
-          if (window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)) {
-              updatePerson(dupId, {name: newName, number: newNumber})
-          }
-          // Clear the form and exit the function early so we don't try to create!
-          setNewName('');
-          setNewNumber('');
-          return;
-      }
-      
-      // We already have the current input value in the newName state!
-      const newContact = {name: newName, number: newNumber}
-      contactService.createContact(newContact)
-          .then(returnedPerson => {
-              setPersons(persons.concat(returnedPerson))
-              handleSuccess(newContact.name);
-          })
-          .catch(err => {
-              console.error('Error creating new contact', err);
-              handleError(newContact, err);
-          })
+  useEffect(() => {
+      countryHook();
+  }, []);
 
-      setNewName('');
-      setNewNumber('');
-  }
-  const deletePerson = (id) => {
-        contactService.deleteContact(id)
-            .then(returnedPerson => {
-                setPersons(persons.filter(person => person.id !== id))
-            })
-            .catch(err => {
-                console.error('Error deleting contact', err);
-                handleError(id, err);
-            })
-  }
-  const updatePerson = (id, updatedPerson) => {
-        contactService.updateContact(id, updatedPerson)
-            .then(returnedPerson => {
-                setPersons(persons.map(person => person.id !== id ? person : returnedPerson))
-            })
-            .catch(err => {
-                console.error('Error updating contact', err)
-                handleError(updatedPerson, err);
-            })
-  }
-
-
-
+  const countriesToShow = country.filter( c => {
+      return c.name.common.toLowerCase().includes(filter.toLowerCase())})
 
   return (
     <div>
-        <Notification message={notificationMessage} className={notificationStyle}/>
-        <Filter filter={filter} setFilter={setFilter}/>
-      <h2>Phonebook</h2>
-      <PersonsForm
-          addPerson={addPerson}
-          newName={newName}
-          setNewName={setNewName}
-          newNumber={newNumber}
-          setNewNumber={setNewNumber}
-          deletePerson={deletePerson}
-          updatePerson={updatePerson}
-      />
-      <h2>Numbers</h2>
-        <Persons persons={persons} filter={filter} deletePerson={deletePerson}
-        updatePerson={updatePerson}/>
+   <Notification message={notificationMessage} className={notificationStyle}/>
+   <Filter filter={filter} setFilter={setFilter}/>
+      <h2>Country List</h2>
+      <Countries countryList={countriesToShow} setFilter={setFilter} />
+
     </div>
   )
 }
